@@ -25,7 +25,15 @@ export function LoginPage() {
         setError('登录名或密码错误，或账户已停用');
       } else {
         const user = users[0];
-        saveUser({ emp_id: user.emp_id, emp_name: user.emp_name, role: user.role });
+        saveUser({
+          emp_id: user.emp_id,
+          login_name: user.login_name,
+          emp_name: user.emp_name,
+          role: user.role,
+          department_id: user.department_id ?? null,
+          avatar_path: user.avatar_path ?? null,
+          login_time: new Date().toISOString(),
+        });
         navigate('/board');
       }
     } catch (err: unknown) {
