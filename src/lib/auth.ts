@@ -36,9 +36,19 @@ export function getSession(): SessionPayload | null {
   }
 }
 
+// Alias for legacy callers that expect "getCurrentUser" naming
+export function getCurrentUser() {
+  return getSession();
+}
+
 export function saveSession(session: SessionPayload) {
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   localStorage.setItem(LAST_LOGIN_KEY, session.login_time);
+}
+
+// Alias for legacy callers that expect "saveUser" naming
+export function saveUser(session: SessionPayload) {
+  saveSession(session);
 }
 
 export function clearSession() {

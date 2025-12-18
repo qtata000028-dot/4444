@@ -27,6 +27,7 @@ export interface EmployeeUser {
   role: Role;
   is_active: boolean;
   avatar_file_id?: string | null;
+  remark?: string | null;
 }
 
 export interface EmployeeProfile extends EmployeeUser {
