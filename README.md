@@ -21,6 +21,8 @@
 2. 环境变量（`.env` 或 Vercel 项目设置）：
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
+
+   仓库内已内置演示 Supabase 地址与 anon key（PostgREST 直连），方便开箱体验；正式部署请覆盖为你的项目凭据。
 3. 推荐数据库表结构（字段即需求描述，可直接在 Supabase SQL Editor 创建）：
    - `employee_user(emp_id primary key, login_name, emp_name, pwd, role, is_active boolean, remark text)`
    - `process_master(process_id primary key, process_name, is_active boolean, remark text)`

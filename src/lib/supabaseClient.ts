@@ -1,5 +1,9 @@
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const fallbackUrl = 'https://ugxkzfvdybzbsxitcybw.supabase.co';
+const fallbackKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVneGt6ZnZkeWJ6YnN4aXRjeWJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwNDIxMTAsImV4cCI6MjA4MTYxODExMH0.N1MI3t0lU0s1xLqcB5BbCqR_dnKDr6VhBuYMENJoCwo';
+
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) || fallbackUrl;
+const supabaseKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || fallbackKey;
 
 export type SupabaseFilter = Record<string, string | number | boolean | null>;
 
