@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { AppShell } from '../components/AppShell';
-import { fetchProfile, getSession, logout } from '../lib/auth';
+import { fetchProfile, getSession, logout, saveSession } from '../lib/auth';
 import { getPublicFileUrl, supabase } from '../lib/supabase';
-import { FileObject, EmployeeProfile } from '../types';
+import { EmployeeProfile } from '../types';
 import { Camera, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,9 +20,7 @@ export function MePage() {
     fetchProfile(session.emp_id)
       .then((res) => {
         setProfile(res);
-        if (res?.avatar_file) {
-          setAvatarUrl(getPublicFileUrl(res.avatar_file.bucket, res.avatar_file.object_path));
-        }
+        setAvatarUrl(getPublicFileUrl('avatars', res?.avatar_path || session.avatar_path));
       })
       .catch((err) => setError((err as Error).message));
   }, [session]);
@@ -41,7 +39,7 @@ export function MePage() {
     setError('');
     setMessage('');
     const ext = file.name.split('.').pop() || 'png';
-    const object_path = `emp/${session.emp_id}/avatar_${Date.now()}.${ext}`;
+    const object_path = `${session.emp_id}/avatar_${Date.now()}.${ext}`;
     const { error: uploadError } = await supabase.storage.from('avatars').upload(object_path, file, {
       contentType: file.type,
       upsert: true,
@@ -52,30 +50,9 @@ export function MePage() {
       return;
     }
 
-    const { data: inserted, error: insertError } = await supabase
-      .from('file_object')
-      .insert<FileObject>({
-        owner_emp_id: session.emp_id,
-        file_kind: 'avatar',
-        origin_name: file.name,
-        mime_type: file.type,
-        size_bytes: file.size,
-        bucket: 'avatars',
-        object_path,
-        is_public: true,
-      })
-      .select()
-      .maybeSingle();
-
-    if (insertError || !inserted) {
-      setError(insertError?.message || '保存文件信息失败');
-      setUploading(false);
-      return;
-    }
-
     const { error: updateError } = await supabase
       .from('employee_user')
-      .update({ avatar_file_id: inserted.file_id })
+      .update({ avatar_path: object_path })
       .eq('emp_id', session.emp_id);
     if (updateError) {
       setError(updateError.message);
@@ -83,7 +60,9 @@ export function MePage() {
       return;
     }
 
-    setAvatarUrl(getPublicFileUrl(inserted.bucket, inserted.object_path));
+    const updatedSession = { ...session, avatar_path: object_path };
+    saveSession(updatedSession);
+    setAvatarUrl(getPublicFileUrl('avatars', object_path));
     setMessage('头像已更新');
     setUploading(false);
   };
@@ -155,8 +134,8 @@ export function MePage() {
           <div className="rounded-2xl bg-white/80 p-6 shadow ring-1 ring-slate-200">
             <h3 className="text-lg font-semibold text-slate-900">说明</h3>
             <p className="mt-2 text-sm text-slate-600">
-              头像上传直接写入 Supabase Storage 的 avatars bucket，并在 file_object/employee_user 中记录关联。
-              若 bucket 配置为 public，本页优先通过 getPublicUrl 显示头像。
+              头像上传直接写入 Supabase Storage 的 avatars bucket，并在 employee_user.avatar_path 记录路径。
+              bucket 为 public 时使用 getPublicUrl 即可展示，若改为私有可切换为 signedUrl。
             </p>
           </div>
         </div>

@@ -75,13 +75,13 @@ export async function login(login_name: string, password: string) {
     .from('employee_user')
     .select('*')
     .eq('login_name', login_name)
+    .eq('pwd', password)
+    .eq('is_active', true)
     .limit(1)
     .maybeSingle();
 
   if (error) throw error;
-  if (!data) throw new Error('账号不存在');
-  if (!data.is_active) throw new Error('账号已停用');
-  if (data.pwd !== password) throw new Error('密码不正确');
+  if (!data) throw new Error('登录名或密码错误，或账户已停用');
 
   const session: SessionPayload = {
     emp_id: data.emp_id,
@@ -89,6 +89,7 @@ export async function login(login_name: string, password: string) {
     emp_name: data.emp_name,
     role: data.role,
     department_id: data.department_id,
+    avatar_path: data.avatar_path,
     login_time: new Date().toISOString(),
   };
   saveSession(session);
@@ -98,7 +99,7 @@ export async function login(login_name: string, password: string) {
 export async function fetchProfile(emp_id: string): Promise<EmployeeProfile | null> {
   const { data, error } = await supabase
     .from('employee_user')
-    .select('*, department:department_id(*), avatar_file:file_object!avatar_file_id(*)')
+    .select('*, department:department_id(*)')
     .eq('emp_id', emp_id)
     .maybeSingle();
   if (error) throw error;

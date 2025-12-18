@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AppShell } from '../components/AppShell';
 import { mockOrders, mockItems, mockSteps, mockCalendar } from '../lib/mockData';
-import { OrderHeader, PlanAllocationDay, SchedulePreviewResult } from '../types';
+import { OrderHeader, PlanAllocationDay, SchedulePreviewResult, SessionPayload } from '../types';
 import { runSchedule, ScheduleOptions } from '../lib/scheduler';
+import { getSession, saveSession } from '../lib/auth';
+import { getPublicFileUrl, supabase } from '../lib/supabase';
+import { Camera, Loader2 } from 'lucide-react';
 
 interface HeatCell {
   process_id: string;
@@ -12,16 +15,67 @@ interface HeatCell {
 }
 
 export function BoardPage() {
+  const [session, setSession] = useState<SessionPayload | null>(() => getSession());
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
   const [orders, setOrders] = useState<OrderHeader[]>(mockOrders);
   const [options, setOptions] = useState<ScheduleOptions>({ safetyDays: 2, allowSameDayHandoff: true });
   const [allocations, setAllocations] = useState<PlanAllocationDay[]>([]);
   const [preview, setPreview] = useState<SchedulePreviewResult[]>([]);
 
   useEffect(() => {
+    if (session?.avatar_path) {
+      setAvatarUrl(getPublicFileUrl('avatars', session.avatar_path));
+    }
+  }, [session]);
+
+  useEffect(() => {
     const result = runSchedule(orders, mockItems, mockSteps, mockCalendar, [], options);
     setAllocations(result.allocations);
     setPreview(result.previewResults);
   }, [orders, options]);
+
+  const handleAvatar = async (file: File) => {
+    if (!session) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setAvatarError('仅支持 jpg/png/webp');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarError('文件大小限制 2MB');
+      return;
+    }
+    setUploading(true);
+    setAvatarError('');
+    const ext = file.name.split('.').pop() || 'png';
+    const object_path = `${session.emp_id}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('avatars').upload(object_path, file, {
+      contentType: file.type,
+      upsert: true,
+    });
+    if (uploadError) {
+      setAvatarError(uploadError.message);
+      setUploading(false);
+      return;
+    }
+
+    const { error: updateError } = await supabase
+      .from('employee_user')
+      .update({ avatar_path: object_path })
+      .eq('emp_id', session.emp_id);
+    if (updateError) {
+      setAvatarError(updateError.message);
+      setUploading(false);
+      return;
+    }
+
+    const updatedSession = { ...session, avatar_path: object_path };
+    saveSession(updatedSession);
+    setSession(updatedSession);
+    setAvatarUrl(getPublicFileUrl('avatars', object_path));
+    setUploading(false);
+  };
 
   const heat = useMemo(() => {
     const map = new Map<string, HeatCell>();
@@ -38,6 +92,40 @@ export function BoardPage() {
 
   return (
     <AppShell title="排程看板" subtitle="订单池拖动 + 产能热力 + 可行性概览">
+      {session && (
+        <div className="mb-6 grid gap-4 rounded-2xl bg-white/80 p-5 shadow ring-1 ring-slate-200 md:grid-cols-[220px,1fr]">
+          <div className="relative h-40 w-40 rounded-2xl bg-slate-100">
+            {avatarUrl ? (
+              <img src={avatarUrl} className="h-full w-full rounded-2xl object-cover" alt="avatar" />
+            ) : (
+              <div className="flex h-full items-center justify-center rounded-2xl text-sm text-slate-400">未上传</div>
+            )}
+            <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl bg-slate-900/40 opacity-0 backdrop-blur-sm transition hover:opacity-100">
+              {uploading ? <Loader2 className="h-6 w-6 animate-spin text-white" /> : <Camera className="h-5 w-5 text-white" />}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void handleAvatar(file);
+                }}
+                disabled={uploading}
+              />
+            </label>
+          </div>
+          <div className="grid gap-2 text-sm text-slate-700 md:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">姓名：{session.emp_name}</div>
+            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">登录名：{session.login_name}</div>
+            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">角色：{session.role}</div>
+            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">部门 ID：{session.department_id ?? '未配置'}</div>
+            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">员工 ID：{session.emp_id}</div>
+            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">登录时间：{session.login_time}</div>
+          </div>
+          {avatarError && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-600 ring-1 ring-red-200">{avatarError}</div>}
+        </div>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="rounded-2xl bg-white/80 p-5 shadow ring-1 ring-slate-200">
           <div className="flex items-center justify-between">

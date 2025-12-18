@@ -26,13 +26,12 @@ export interface EmployeeUser {
   pwd: string;
   role: Role;
   is_active: boolean;
-  avatar_file_id?: string | null;
+  avatar_path?: string | null;
   remark?: string | null;
 }
 
 export interface EmployeeProfile extends EmployeeUser {
   department?: Department | null;
-  avatar_file?: FileObject | null;
 }
 
 export interface ProcessMaster {
@@ -110,5 +109,6 @@ export interface SessionPayload {
   emp_name: string;
   role: Role;
   department_id: number | null;
+  avatar_path?: string | null;
   login_time: string;
 }

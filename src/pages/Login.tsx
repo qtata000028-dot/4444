@@ -31,7 +31,7 @@ export function LoginPage() {
       if (remember) {
         saveRemember({ enabled: true, login_name: loginName, password_encoded: encodePassword(password) });
       } else {
-        saveRemember({ enabled: false, login_name: '', password_encoded: '' });
+        saveRemember({ enabled: false, login_name: loginName, password_encoded: '' });
       }
       const redirect = (location.state as { from?: string } | null)?.from || '/me';
       navigate(redirect);
@@ -113,9 +113,8 @@ export function LoginPage() {
                   const enabled = e.target.checked;
                   setRemember(enabled);
                   if (!enabled) {
-                    saveRemember({ enabled: false, login_name: '', password_encoded: '' });
+                    saveRemember({ enabled: false, login_name: loginName, password_encoded: '' });
                     setPassword('');
-                    setLoginName('');
                   }
                 }}
               />

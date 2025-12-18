@@ -2,8 +2,8 @@ import { AppShell } from '../components/AppShell';
 
 const rows = [
   { name: 'department', fields: 'department_id (pk), dep_name', note: '部门主数据' },
-  { name: 'employee_user', fields: 'emp_id (pk), login_name, emp_name, department_id, pwd, role, is_active, avatar_file_id', note: '自定义登录体系' },
-  { name: 'file_object', fields: 'file_id (pk), owner_emp_id, file_kind, origin_name, mime_type, size_bytes, bucket, object_path, is_public', note: '文件元数据 / 头像' },
+  { name: 'employee_user', fields: 'emp_id (pk), login_name, emp_name, department_id, pwd, role, is_active, remark, avatar_path', note: '自定义登录体系' },
+  { name: 'file_object', fields: 'file_id (pk), owner_emp_id, file_kind, origin_name, mime_type, size_bytes, bucket, object_path, is_public', note: '可选，若需要记录更多文件元信息' },
   { name: 'process_master', fields: 'process_id, process_name, is_active, remark', note: '工序主数据' },
   { name: 'process_calendar_day', fields: 'process_id, work_date, avail_hours, reason', note: '工序日历产能' },
   { name: 'step_template', fields: 'step_id, step_name, version, is_active, ops_json, remark', note: '工艺步骤模板' },

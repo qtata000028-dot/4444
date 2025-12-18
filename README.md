@@ -4,7 +4,7 @@ React 18 + Vite + TypeScript + Tailwind 构建，前端直连 Supabase PostgREST
 
 ## 核心特性
 - **自定义登录**：依据 `employee_user` 表校验明文/哈希密码，记住密码（本地 base64，仅演示），登录态写入 `localStorage`。
-- **头像闭环**：`/me` 页面完成 avatars bucket 上传 → `file_object` 写入 → `employee_user.avatar_file_id` 更新，公有 bucket 直接展示。
+- **头像闭环**：`/me` & 看板完成 avatars bucket 上传 → `employee_user.avatar_path` 更新，公有 bucket 直接展示。
 - **ERP 布局**：`AppShell` 提供左侧导航 + 顶部栏，页卡圆角 2xl、轻阴影，整体 slate 商务配色。
 - **排程看板**：基于本地 mock 的订单池拖动、参数切换、热力/可行性预览（可替换为 Supabase 数据）。
 - **模块拆分**：`/orders`、`/steps`、`/impact`、`/tables` 等页面独立路由，可直接通过 URL 打开。
@@ -16,7 +16,7 @@ React 18 + Vite + TypeScript + Tailwind 构建，前端直连 Supabase PostgREST
 
 ## 必要表结构（Postgres / Supabase）
 - `department(department_id int pk, dep_name text)`
-- `employee_user(emp_id uuid pk, login_name text unique, emp_name text, department_id int, pwd text, role text, is_active bool, avatar_file_id uuid)`
+- `employee_user(emp_id uuid pk, login_name text unique, emp_name text, department_id int, pwd text, role text, is_active bool, remark text, avatar_path text)`
 - `file_object(file_id uuid pk, owner_emp_id uuid, file_kind text, origin_name text, mime_type text, size_bytes bigint, bucket text, object_path text, is_public bool, created_at timestamptz)`
 - 排程相关：`process_master`、`process_calendar_day`、`step_template`、`order_header`、`order_item`、`plan_allocation_day`
 - Storage bucket：`avatars`（演示建议 public 并给 anon upload/read 策略）
@@ -38,11 +38,10 @@ npm run build # 产出 dist，用于 Vercel 静态部署
 
 ## 头像上传流程（/me 页面）
 1. 选择 jpg/png/webp（<=2MB）。
-2. 生成 `emp/{emp_id}/avatar_<timestamp>.<ext>`。
+2. 生成 `{emp_id}/avatar_<timestamp>.<ext>`。
 3. `supabase.storage.from('avatars').upload(object_path, file, { upsert:true })`。
-4. `file_object` 插入元数据（`is_public=true`）。
-5. 更新 `employee_user.avatar_file_id`。
-6. 优先用 `getPublicUrl` 展示头像。
+4. 更新 `employee_user.avatar_path`（如需元数据可自行写 `file_object`）。
+5. 优先用 `getPublicUrl` 展示头像。
 
 ## 部署提示
 - Vercel 项目设置中添加环境变量（若保留默认演示值即可开箱体验）。
