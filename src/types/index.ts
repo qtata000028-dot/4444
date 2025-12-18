@@ -1,11 +1,37 @@
+export type Role = 'admin' | 'user' | 'planner' | 'viewer';
+
+export interface Department {
+  department_id: number;
+  dep_name: string;
+}
+
+export interface FileObject {
+  file_id?: string;
+  owner_emp_id: string;
+  file_kind: 'avatar';
+  origin_name: string;
+  mime_type: string;
+  size_bytes: number;
+  bucket: string;
+  object_path: string;
+  is_public: boolean;
+  created_at?: string;
+}
+
 export interface EmployeeUser {
   emp_id: string;
   login_name: string;
   emp_name: string;
+  department_id: number | null;
   pwd: string;
-  role: 'admin' | 'planner' | 'viewer';
+  role: Role;
   is_active: boolean;
-  remark?: string | null;
+  avatar_file_id?: string | null;
+}
+
+export interface EmployeeProfile extends EmployeeUser {
+  department?: Department | null;
+  avatar_file?: FileObject | null;
 }
 
 export interface ProcessMaster {
@@ -75,4 +101,13 @@ export interface SchedulePreviewResult {
   feasible: boolean;
   bottleneck?: string;
   finish_date?: string;
+}
+
+export interface SessionPayload {
+  emp_id: string;
+  login_name: string;
+  emp_name: string;
+  role: Role;
+  department_id: number | null;
+  login_time: string;
 }

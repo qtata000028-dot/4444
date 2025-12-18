@@ -1,22 +1,24 @@
-import { Navigate } from 'react-router-dom';
-import { getCurrentUser } from '../lib/auth';
+import { ReactNode } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { getSession } from '../lib/auth';
+import { Role } from '../types';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  role?: 'admin' | 'planner' | 'viewer';
+interface Props {
+  children: ReactNode;
+  allowRoles?: Role[];
 }
 
-export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
-  const user = getCurrentUser();
-  if (!user) {
+export function ProtectedRoute({ children, allowRoles }: Props) {
+  const session = getSession();
+  const location = useLocation();
+
+  if (!session) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  if (allowRoles && !allowRoles.includes(session.role)) {
     return <Navigate to="/login" replace />;
   }
-  if (role && user.role !== role) {
-    return (
-      <div className="p-6 text-center text-red-600">
-        无权限访问该页面（需要 {role}）。
-      </div>
-    );
-  }
+
   return <>{children}</>;
 }

@@ -1,57 +1,50 @@
-# 自动排程演示系统（React + Vite + Tailwind）
+# 高端 ERP 风格 · 自动排程演示站点
 
-本项目实现“自动排程演示系统”，基于 React + Vite + TypeScript + Tailwind，面向 Vercel 部署，后端使用 Supabase (Postgres + PostgREST)。每个业务模块独立路由，可直接通过 URL 打开。
+React 18 + Vite + TypeScript + Tailwind 构建，前端直连 Supabase PostgREST（未使用 Supabase Auth），可一键部署到 Vercel。路由模块化，可单独打开登录、个人中心、看板、订单、工艺、影响分析与数据表字典等页面。
 
-## 主要特性
-- 登录鉴权：`employee_user` 表校验（明文演示密码），本地存储登录态。
-- 排程看板 `/board`：订单池拖动排序、参数配置、安全缓冲、同日衔接开关、产能热力、预览分配、提交排程版本。
-- 工艺步骤库 `/steps`：`step_template` CRUD，`ops_json` 表格编辑，关联 `process_master`。
-- 订单模块 `/orders`：`order_header` + `order_item` 维护，拖动排序更新 `rank_no`。
-- 工序日历 `/calendar`：`process_calendar_day` 维护与批量生成。
-- 员工模块 `/employees`：`employee_user` CRUD，需 admin 角色。
-- 影响分析 `/impact`：对比当前预览与基线 `plan_id` 的完工/缓冲变化。
-- 排程算法：前端倒排，考虑安全天数、同日衔接、手工锁定（`plan_id=0`），生成 `plan_allocation_day` 分配。
+## 核心特性
+- **自定义登录**：依据 `employee_user` 表校验明文/哈希密码，记住密码（本地 base64，仅演示），登录态写入 `localStorage`。
+- **头像闭环**：`/me` 页面完成 avatars bucket 上传 → `file_object` 写入 → `employee_user.avatar_file_id` 更新，公有 bucket 直接展示。
+- **ERP 布局**：`AppShell` 提供左侧导航 + 顶部栏，页卡圆角 2xl、轻阴影，整体 slate 商务配色。
+- **排程看板**：基于本地 mock 的订单池拖动、参数切换、热力/可行性预览（可替换为 Supabase 数据）。
+- **模块拆分**：`/orders`、`/steps`、`/impact`、`/tables` 等页面独立路由，可直接通过 URL 打开。
 
-## 运行与开发
-1. 安装依赖（如网络限制导致无法下载 npm scoped 包，请配置可用镜像后再重试）：
-   ```bash
-   npm install
-   npm run dev
-   ```
-2. 环境变量（`.env` 或 Vercel 项目设置）：
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
+## 环境变量
+在 Vercel 或 `.env` 中提供（已内置演示回退值，正式部署请替换）：
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
 
-   仓库内已内置演示 Supabase 地址与 anon key（PostgREST 直连），方便开箱体验；正式部署请覆盖为你的项目凭据。
-3. 推荐数据库表结构（字段即需求描述，可直接在 Supabase SQL Editor 创建）：
-   - `employee_user(emp_id primary key, login_name, emp_name, pwd, role, is_active boolean, remark text)`
-   - `process_master(process_id primary key, process_name, is_active boolean, remark text)`
-   - `process_calendar_day(process_id references process_master, work_date date, avail_hours numeric, reason text)`
-   - `step_template(step_id primary key, step_name, version, is_active boolean, ops_json jsonb, remark text)`
-   - `order_header(order_no primary key, rank_no integer, release_date date, settle_date date, status text, note text)`
-   - `order_item(order_no references order_header, part_no text, qty numeric, step_id references step_template, remark text)`
-   - `plan_allocation_day(allocation_id bigserial primary key, plan_id integer, plan_time timestamptz, work_date date, process_id text, order_no text, part_no text, op_seq integer, alloc_hours numeric, source text, note text)`
+## 必要表结构（Postgres / Supabase）
+- `department(department_id int pk, dep_name text)`
+- `employee_user(emp_id uuid pk, login_name text unique, emp_name text, department_id int, pwd text, role text, is_active bool, avatar_file_id uuid)`
+- `file_object(file_id uuid pk, owner_emp_id uuid, file_kind text, origin_name text, mime_type text, size_bytes bigint, bucket text, object_path text, is_public bool, created_at timestamptz)`
+- 排程相关：`process_master`、`process_calendar_day`、`step_template`、`order_header`、`order_item`、`plan_allocation_day`
+- Storage bucket：`avatars`（演示建议 public 并给 anon upload/read 策略）
 
-   若有 `v_order_operation` 视图，可直接使用；否则前端从 `step_template.ops_json` 展开。
-
-4. RLS 策略：演示环境可关闭；或对以上表添加 `anon` 允许 CRUD 的 policy 以便前端操作。
-5. Vercel 部署：导入本仓库，添加上述环境变量，构建命令 `npm run build`，输出目录 `dist`。
-
-## 模块路由
-- `/login` 登录页
-- `/board` 排程看板（聚合页）
-- `/steps` 工艺步骤库（独立页）
-- `/orders` 订单模块（独立页）
-- `/calendar` 工序日历（独立页）
-- `/employees` 员工模块（仅 admin）
-- `/impact` 影响分析
+## 开发与构建
+```bash
+npm install
+npm run dev   # 本地调试
+npm run build # 产出 dist，用于 Vercel 静态部署
+```
 
 ## 代码结构
-- `src/pages/*`：各路由页面
-- `src/lib/scheduler.ts`：前端排程算法
-- `src/lib/supabaseClient.ts`：PostgREST 轻量封装
-- `src/components/*`：通用 UI 组件（TopBar/Card/ProtectedRoute 等）
+- `src/lib/supabase.ts`：Supabase client，含内置演示 URL/anon key 回退
+- `src/lib/auth.ts`：登录、session、记住密码工具 & Profile 查询
+- `src/lib/scheduler.ts`：前端倒排算法（安全天数、同日衔接）
+- `src/lib/mockData.ts`：演示用订单/步骤/日历数据
+- `src/components/AppShell.tsx`：高端 ERP 布局
+- `src/pages/*.tsx`：路由页面（Login/Me/Board/Orders/Steps/Impact/Tables）
 
-## 注意
-- 拖动排序使用原生 HTML5 DnD；成功排序后会更新内存状态，调用 Supabase 更新可按需扩展。
-- 当前仓库未包含 node_modules；构建前需联网安装依赖。
+## 头像上传流程（/me 页面）
+1. 选择 jpg/png/webp（<=2MB）。
+2. 生成 `emp/{emp_id}/avatar_<timestamp>.<ext>`。
+3. `supabase.storage.from('avatars').upload(object_path, file, { upsert:true })`。
+4. `file_object` 插入元数据（`is_public=true`）。
+5. 更新 `employee_user.avatar_file_id`。
+6. 优先用 `getPublicUrl` 展示头像。
+
+## 部署提示
+- Vercel 项目设置中添加环境变量（若保留默认演示值即可开箱体验）。
+- 构建命令 `npm run build`，输出目录 `dist`。
+- 演示期未启用 RLS，正式环境请按需加策略。

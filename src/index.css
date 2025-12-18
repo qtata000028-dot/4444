@@ -84,3 +84,7 @@ body {
 .table-base td {
   @apply px-3 py-2 border-b border-slate-100;
 }
+
+.animate-spin-slow {
+  animation: spin 12s linear infinite;
+}
