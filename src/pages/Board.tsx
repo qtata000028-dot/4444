@@ -95,22 +95,17 @@ export function BoardPage() {
   return (
     <AppShell title="排程看板" subtitle="订单池拖动 + 产能热力 + 可行性概览">
       {session && (
-        <div className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white shadow-2xl ring-1 ring-slate-800/60">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-50"
-            style={{
-              backgroundImage:
-                'radial-gradient(circle at 20% 20%, rgba(96,165,250,0.24), transparent 30%), radial-gradient(circle at 80% 0%, rgba(129,140,248,0.22), transparent 28%), radial-gradient(circle at 50% 90%, rgba(16,185,129,0.2), transparent 30%)',
-            }}
-          />
-          <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center">
-            <div className="relative h-32 w-32 overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-xl">
+        <div className="relative mb-8 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 p-6 text-white shadow-[0_25px_60px_-15px_rgba(0,0,0,0.55)] ring-1 ring-slate-800/60">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(96,165,250,0.25),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(52,211,153,0.18),transparent_28%),radial-gradient(circle_at_50%_90%,rgba(129,140,248,0.18),transparent_30%)] opacity-70" />
+          <div className="pointer-events-none absolute inset-y-0 right-10 h-64 w-64 rotate-12 rounded-full bg-white/5 blur-3xl" />
+          <div className="relative flex flex-col items-center gap-5 md:flex-row md:items-center">
+            <div className="relative h-32 w-32 overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-2xl shadow-emerald-500/20">
               {avatarUrl ? (
-                <img src={avatarUrl} className="h-full w-full rounded-2xl object-cover" alt="avatar" />
+                <img src={avatarUrl} className="h-full w-full rounded-3xl object-cover" alt="avatar" />
               ) : (
-                <div className="flex h-full items-center justify-center rounded-2xl text-sm text-slate-200">未上传</div>
+                <div className="flex h-full items-center justify-center rounded-3xl text-sm text-slate-200">未上传</div>
               )}
-              <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl bg-slate-900/50 opacity-0 backdrop-blur-sm transition hover:opacity-100">
+              <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-3xl bg-slate-950/60 opacity-0 backdrop-blur-sm transition hover:opacity-100">
                 {uploading ? <Loader2 className="h-6 w-6 animate-spin text-white" /> : <Camera className="h-5 w-5 text-white" />}
                 <input
                   type="file"
@@ -125,19 +120,19 @@ export function BoardPage() {
               </label>
             </div>
 
-            <div className="space-y-3 text-left">
+            <div className="space-y-2 text-left">
               <div className="flex items-center gap-2">
-                <BadgeCheck className="h-5 w-5 text-emerald-300" />
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-200">个人概览</p>
+                <BadgeCheck className="h-4 w-4 text-emerald-300" />
+                <p className="text-[11px] uppercase tracking-[0.35em] text-slate-200">个人卡片</p>
               </div>
-              <h2 className="text-3xl font-semibold leading-tight text-white">{session.emp_name}</h2>
+              <h2 className="text-3xl font-semibold leading-tight text-white drop-shadow-sm">{session.emp_name}</h2>
               <div className="flex flex-wrap items-center gap-3 text-sm text-slate-200">
-                <span className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 font-semibold">
-                  <Building2 className="h-4 w-4" /> 部门：{session.department_id || '—'}
-                  <span className="ml-2 rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-semibold text-amber-900">请假</span>
+                <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold shadow-sm ring-1 ring-white/15">
+                  <Building2 className="h-4 w-4" />
+                  <span>{session.department_id || '未分配部门'}</span>
+                  <span className="rounded-full bg-amber-100/90 px-2 py-0.5 text-[11px] font-semibold text-amber-900 shadow-sm">请假</span>
                 </span>
-                <span className="rounded-full bg-emerald-100/20 px-3 py-1 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-200/40">角色：{session.role || '—'}</span>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">账号：{session.login_name}</span>
+                <span className="rounded-full bg-emerald-100/15 px-3 py-1 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-200/40 shadow-sm">角色：{session.role || '—'}</span>
               </div>
             </div>
           </div>
@@ -146,7 +141,7 @@ export function BoardPage() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl bg-white/80 p-5 shadow ring-1 ring-slate-200">
+        <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-900">排程参数</h3>
             <div className="flex gap-2 text-xs text-slate-500">
@@ -173,11 +168,11 @@ export function BoardPage() {
                 onChange={(e) => setOptions({ ...options, allowSameDayHandoff: e.target.checked })}
               />
             </label>
-            <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-500 ring-1 ring-slate-200">接入 Supabase 订单/日历后将即时刷新排程预览。</p>
+            <p className="rounded-xl bg-slate-50/90 p-3 text-xs text-slate-500 ring-1 ring-slate-200">接入 Supabase 订单/日历后将即时刷新排程预览。</p>
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white/80 p-5 shadow ring-1 ring-slate-200 lg:col-span-2">
+        <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur lg:col-span-2">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-900">订单池排序</h3>
             <p className="text-xs text-slate-500">拖动卡片调整 rank_no（暂无数据时保持空状态）</p>
@@ -201,7 +196,7 @@ export function BoardPage() {
                       return next.sort((a1, b1) => a1.rank_no - b1.rank_no);
                     });
                   }}
-                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 px-4 py-3 text-sm shadow-sm"
+                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 px-4 py-3 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow"
                 >
                   <div>
                     <div className="text-base font-semibold text-slate-900">{order.order_no}</div>
@@ -215,7 +210,7 @@ export function BoardPage() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl bg-white/80 p-5 shadow ring-1 ring-slate-200">
+        <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur">
           <h3 className="text-lg font-semibold text-slate-900">工序产能热力</h3>
           {heat.length === 0 ? (
             <p className="mt-4 text-sm text-slate-500">等待产能数据接入后展示热力列表。</p>
@@ -249,7 +244,7 @@ export function BoardPage() {
           )}
         </div>
 
-        <div className="rounded-2xl bg-white/80 p-5 shadow ring-1 ring-slate-200">
+        <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur">
           <h3 className="text-lg font-semibold text-slate-900">预览结果</h3>
           <div className="mt-4 space-y-3 text-sm text-slate-700">
             {preview.length === 0 && <p className="text-sm text-slate-500">暂无预览结果，请接入 Supabase 数据源后自动刷新。</p>}

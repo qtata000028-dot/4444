@@ -24,8 +24,8 @@ export function AppShell({ title, subtitle, children }: AppShellProps) {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200">
-      <div className="pointer-events-none fixed inset-0 opacity-50" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(59,130,246,0.08), transparent 30%), radial-gradient(circle at 80% 0%, rgba(94,234,212,0.07), transparent 28%), radial-gradient(circle at 60% 80%, rgba(59,130,246,0.06), transparent 30%)' }} />
-      <aside className="relative hidden w-64 flex-shrink-0 flex-col border-r border-slate-200/60 bg-white/90 px-4 py-6 shadow-xl shadow-slate-300/60 backdrop-blur lg:flex">
+      <div className="pointer-events-none fixed inset-0 opacity-70" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(59,130,246,0.08), transparent 30%), radial-gradient(circle at 80% 0%, rgba(94,234,212,0.07), transparent 28%), radial-gradient(circle at 60% 80%, rgba(59,130,246,0.06), transparent 30%), linear-gradient(135deg, rgba(248,250,252,0.8), rgba(241,245,249,0.6))' }} />
+      <aside className="relative hidden w-64 flex-shrink-0 flex-col border-r border-white/60 bg-white/85 px-4 py-6 shadow-2xl shadow-slate-300/60 backdrop-blur-xl lg:flex">
         <div className="mb-8 flex items-center gap-3 px-2 text-slate-800">
           <PanelLeft className="h-6 w-6 text-blue-500" />
           <div>
@@ -42,7 +42,7 @@ export function AppShell({ title, subtitle, children }: AppShellProps) {
                 to={item.to}
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-slate-100 ${
-                    isActive ? 'bg-slate-100 text-slate-900 ring-1 ring-slate-200' : 'text-slate-600'
+                    isActive ? 'bg-slate-100 text-slate-900 ring-1 ring-slate-200 shadow-sm' : 'text-slate-600'
                   }`
                 }
               >
@@ -52,7 +52,7 @@ export function AppShell({ title, subtitle, children }: AppShellProps) {
             );
           })}
         </nav>
-        <div className="mt-auto rounded-xl bg-slate-50 p-4 text-sm text-slate-500 ring-1 ring-slate-200">
+        <div className="mt-auto rounded-xl bg-slate-50/90 p-4 text-sm text-slate-500 shadow-inner ring-1 ring-slate-200">
           <div className="font-semibold text-slate-700">{session?.emp_name || '未登录'}</div>
           <div className="mt-1 flex items-center justify-between text-xs">
             <span>{session?.role}</span>
