@@ -23,8 +23,8 @@ export function AppShell({ title, subtitle, children }: AppShellProps) {
   const session = getSession();
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <aside className="hidden w-64 flex-shrink-0 flex-col border-r border-slate-200 bg-white/80 px-4 py-6 shadow-sm lg:flex">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200">
+      <aside className="hidden w-64 flex-shrink-0 flex-col border-r border-slate-200 bg-white/85 px-4 py-6 shadow-xl shadow-slate-200/60 lg:flex">
         <div className="mb-8 flex items-center gap-3 px-2 text-slate-800">
           <PanelLeft className="h-6 w-6 text-blue-500" />
           <div>
@@ -69,7 +69,7 @@ export function AppShell({ title, subtitle, children }: AppShellProps) {
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">
-        <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/70 backdrop-blur">
+        <header className="sticky top-0 z-10 border-b border-slate-200/80 bg-white/80 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
             <div>
               <p className="text-xs uppercase tracking-[0.25em] text-slate-400">ERP Suite</p>

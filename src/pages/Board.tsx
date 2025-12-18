@@ -93,36 +93,42 @@ export function BoardPage() {
   return (
     <AppShell title="排程看板" subtitle="订单池拖动 + 产能热力 + 可行性概览">
       {session && (
-        <div className="mb-6 grid gap-4 rounded-2xl bg-white/80 p-5 shadow ring-1 ring-slate-200 md:grid-cols-[220px,1fr]">
-          <div className="relative h-40 w-40 rounded-2xl bg-slate-100">
-            {avatarUrl ? (
-              <img src={avatarUrl} className="h-full w-full rounded-2xl object-cover" alt="avatar" />
-            ) : (
-              <div className="flex h-full items-center justify-center rounded-2xl text-sm text-slate-400">未上传</div>
-            )}
-            <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl bg-slate-900/40 opacity-0 backdrop-blur-sm transition hover:opacity-100">
-              {uploading ? <Loader2 className="h-6 w-6 animate-spin text-white" /> : <Camera className="h-5 w-5 text-white" />}
-              <input
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void handleAvatar(file);
-                }}
-                disabled={uploading}
-              />
-            </label>
+        <div className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 p-6 text-white shadow-2xl ring-1 ring-slate-700/60">
+          <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-screen" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(56,189,248,0.35), transparent 30%), radial-gradient(circle at 80% 10%, rgba(129,140,248,0.3), transparent 30%), radial-gradient(circle at 30% 80%, rgba(16,185,129,0.32), transparent 30%)' }} />
+          <div className="relative grid gap-6 md:grid-cols-[220px,1fr] md:items-center">
+            <div className="relative h-44 w-44 overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-xl">
+              {avatarUrl ? (
+                <img src={avatarUrl} className="h-full w-full rounded-2xl object-cover" alt="avatar" />
+              ) : (
+                <div className="flex h-full items-center justify-center rounded-2xl text-sm text-slate-200">未上传</div>
+              )}
+              <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl bg-slate-900/40 opacity-0 backdrop-blur-sm transition hover:opacity-100">
+                {uploading ? <Loader2 className="h-6 w-6 animate-spin text-white" /> : <Camera className="h-5 w-5 text-white" />}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void handleAvatar(file);
+                  }}
+                  disabled={uploading}
+                />
+              </label>
+            </div>
+            <div className="relative grid gap-3 text-sm text-slate-100 md:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">姓名：{session.emp_name}</div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">登录名：{session.login_name}</div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">角色：{session.role}</div>
+              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">
+                <span>部门 ID：{session.department_id ?? '未配置'}</span>
+                <span className="rounded-full bg-amber-400/90 px-3 py-1 text-xs font-semibold text-amber-900">请假</span>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">员工 ID：{session.emp_id}</div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">登录时间：{session.login_time}</div>
+            </div>
           </div>
-          <div className="grid gap-2 text-sm text-slate-700 md:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">姓名：{session.emp_name}</div>
-            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">登录名：{session.login_name}</div>
-            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">角色：{session.role}</div>
-            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">部门 ID：{session.department_id ?? '未配置'}</div>
-            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">员工 ID：{session.emp_id}</div>
-            <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">登录时间：{session.login_time}</div>
-          </div>
-          {avatarError && <div className="rounded-xl bg-red-50 p-3 text-sm text-red-600 ring-1 ring-red-200">{avatarError}</div>}
+          {avatarError && <div className="relative mt-4 rounded-xl bg-red-50/90 p-3 text-sm text-red-700 ring-1 ring-red-200">{avatarError}</div>}
         </div>
       )}
 

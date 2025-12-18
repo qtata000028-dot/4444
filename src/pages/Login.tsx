@@ -64,7 +64,7 @@ export function LoginPage() {
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-relaxed text-slate-200 shadow-inner">
             <p className="font-semibold text-white">演示说明</p>
             <ul className="mt-2 space-y-1 text-slate-200/90">
-              <li>· 登录基于 employee_user 表（未使用 Supabase Auth）</li>
+              <li>· 登录基于 employee_user 表（未使用 Supabase Auth，使用姓名 + 密码校验）</li>
               <li>· 勾选“记住密码”将使用本地 base64 保存（仅演示）</li>
               <li>· 登录成功后可在“我的”页面更换头像，直传 avatars bucket</li>
             </ul>
@@ -77,14 +77,14 @@ export function LoginPage() {
             <h2 className="text-2xl font-semibold text-slate-900">员工登录</h2>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">登录名</label>
+            <label className="text-sm font-medium text-slate-700">员工姓名</label>
             <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-inner">
               <UserRound className="h-4 w-4 text-slate-400" />
               <input
                 value={loginName}
                 onChange={(e) => setLoginName(e.target.value)}
                 className="flex-1 bg-transparent text-slate-900 outline-none placeholder:text-slate-400"
-                placeholder="请输入登录名"
+                placeholder="请输入姓名"
                 required
               />
             </div>
