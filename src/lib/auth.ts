@@ -1,4 +1,4 @@
-import { EmployeeProfile, EmployeeUser, SessionPayload } from '../types';
+import { EmployeeProfile, SessionPayload } from '../types';
 import { supabase } from './supabase';
 
 const SESSION_KEY = 'erp_session';
@@ -84,14 +84,15 @@ export async function login(login_name: string, password: string) {
   if (!data) throw new Error('登录名或密码错误，或账户已停用');
 
   const session: SessionPayload = {
-    emp_id: data.emp_id,
-    login_name: data.login_name,
-    emp_name: data.emp_name,
-    role: data.role,
-    department_id: data.department_id,
-    avatar_path: data.avatar_path,
+    emp_id: String(data.emp_id),
+    login_name: String(data.login_name),
+    emp_name: String(data.emp_name),
+    role: data.role as SessionPayload['role'],
+    department_id: (data.department_id ?? null) as number | null,
+    avatar_path: (data.avatar_path ?? null) as string | null,
     login_time: new Date().toISOString(),
   };
+
   saveSession(session);
   return session;
 }
@@ -102,8 +103,9 @@ export async function fetchProfile(emp_id: string): Promise<EmployeeProfile | nu
     .select('*, department:department_id(*)')
     .eq('emp_id', emp_id)
     .maybeSingle();
+
   if (error) throw error;
-  return data as unknown as EmployeeProfile | null;
+  return (data as unknown as EmployeeProfile) ?? null;
 }
 
 export async function logout() {
