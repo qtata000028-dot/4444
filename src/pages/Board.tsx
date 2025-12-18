@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AppShell } from '../components/AppShell';
-import { mockOrders, mockItems, mockSteps, mockCalendar } from '../lib/mockData';
-import { OrderHeader, PlanAllocationDay, SchedulePreviewResult, SessionPayload } from '../types';
+import { OrderHeader, OrderItem, PlanAllocationDay, ProcessCalendarDay, SchedulePreviewResult, SessionPayload, StepTemplate } from '../types';
 import { runSchedule, ScheduleOptions } from '../lib/scheduler';
 import { getSession, saveSession } from '../lib/auth';
 import { getPublicFileUrl, supabase } from '../lib/supabase';
-import { Camera, Loader2 } from 'lucide-react';
+import { Camera, Loader2, BadgeCheck, Building2 } from 'lucide-react';
 
 interface HeatCell {
   process_id: string;
@@ -19,7 +18,10 @@ export function BoardPage() {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [avatarError, setAvatarError] = useState('');
-  const [orders, setOrders] = useState<OrderHeader[]>(mockOrders);
+  const [orders, setOrders] = useState<OrderHeader[]>([]);
+  const [items, setItems] = useState<OrderItem[]>([]);
+  const [steps, setSteps] = useState<StepTemplate[]>([]);
+  const [calendar, setCalendar] = useState<ProcessCalendarDay[]>([]);
   const [options, setOptions] = useState<ScheduleOptions>({ safetyDays: 2, allowSameDayHandoff: true });
   const [allocations, setAllocations] = useState<PlanAllocationDay[]>([]);
   const [preview, setPreview] = useState<SchedulePreviewResult[]>([]);
@@ -31,10 +33,10 @@ export function BoardPage() {
   }, [session]);
 
   useEffect(() => {
-    const result = runSchedule(orders, mockItems, mockSteps, mockCalendar, [], options);
+    const result = runSchedule(orders, items, steps, calendar, [], options);
     setAllocations(result.allocations);
     setPreview(result.previewResults);
-  }, [orders, options]);
+  }, [orders, items, steps, calendar, options]);
 
   const handleAvatar = async (file: File) => {
     if (!session) return;
@@ -79,7 +81,7 @@ export function BoardPage() {
 
   const heat = useMemo(() => {
     const map = new Map<string, HeatCell>();
-    mockCalendar.forEach((c) => {
+    calendar.forEach((c) => {
       map.set(`${c.process_id}-${c.work_date}`, { process_id: c.process_id, work_date: c.work_date, used: 0, avail: c.avail_hours });
     });
     allocations.forEach((a) => {
@@ -93,16 +95,22 @@ export function BoardPage() {
   return (
     <AppShell title="排程看板" subtitle="订单池拖动 + 产能热力 + 可行性概览">
       {session && (
-        <div className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 p-6 text-white shadow-2xl ring-1 ring-slate-700/60">
-          <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-screen" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(56,189,248,0.35), transparent 30%), radial-gradient(circle at 80% 10%, rgba(129,140,248,0.3), transparent 30%), radial-gradient(circle at 30% 80%, rgba(16,185,129,0.32), transparent 30%)' }} />
-          <div className="relative grid gap-6 md:grid-cols-[220px,1fr] md:items-center">
-            <div className="relative h-44 w-44 overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-xl">
+        <div className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white shadow-2xl ring-1 ring-slate-800/60">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-50"
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at 20% 20%, rgba(96,165,250,0.24), transparent 30%), radial-gradient(circle at 80% 0%, rgba(129,140,248,0.22), transparent 28%), radial-gradient(circle at 50% 90%, rgba(16,185,129,0.2), transparent 30%)',
+            }}
+          />
+          <div className="relative flex flex-col items-start gap-6 md:flex-row md:items-center">
+            <div className="relative h-32 w-32 overflow-hidden rounded-2xl border border-white/20 bg-white/10 shadow-xl">
               {avatarUrl ? (
                 <img src={avatarUrl} className="h-full w-full rounded-2xl object-cover" alt="avatar" />
               ) : (
                 <div className="flex h-full items-center justify-center rounded-2xl text-sm text-slate-200">未上传</div>
               )}
-              <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl bg-slate-900/40 opacity-0 backdrop-blur-sm transition hover:opacity-100">
+              <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-2xl bg-slate-900/50 opacity-0 backdrop-blur-sm transition hover:opacity-100">
                 {uploading ? <Loader2 className="h-6 w-6 animate-spin text-white" /> : <Camera className="h-5 w-5 text-white" />}
                 <input
                   type="file"
@@ -116,16 +124,21 @@ export function BoardPage() {
                 />
               </label>
             </div>
-            <div className="relative grid gap-3 text-sm text-slate-100 md:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">姓名：{session.emp_name}</div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">登录名：{session.login_name}</div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">角色：{session.role}</div>
-              <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">
-                <span>部门 ID：{session.department_id ?? '未配置'}</span>
-                <span className="rounded-full bg-amber-400/90 px-3 py-1 text-xs font-semibold text-amber-900">请假</span>
+
+            <div className="space-y-3 text-left">
+              <div className="flex items-center gap-2">
+                <BadgeCheck className="h-5 w-5 text-emerald-300" />
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-200">个人概览</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">员工 ID：{session.emp_id}</div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 shadow-inner shadow-black/10">登录时间：{session.login_time}</div>
+              <h2 className="text-3xl font-semibold leading-tight text-white">{session.emp_name}</h2>
+              <div className="flex flex-wrap items-center gap-3 text-sm text-slate-200">
+                <span className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1 font-semibold">
+                  <Building2 className="h-4 w-4" /> 部门：{session.department_id || '—'}
+                  <span className="ml-2 rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-semibold text-amber-900">请假</span>
+                </span>
+                <span className="rounded-full bg-emerald-100/20 px-3 py-1 text-xs font-semibold text-emerald-100 ring-1 ring-emerald-200/40">角色：{session.role || '—'}</span>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">账号：{session.login_name}</span>
+              </div>
             </div>
           </div>
           {avatarError && <div className="relative mt-4 rounded-xl bg-red-50/90 p-3 text-sm text-red-700 ring-1 ring-red-200">{avatarError}</div>}
@@ -160,18 +173,17 @@ export function BoardPage() {
                 onChange={(e) => setOptions({ ...options, allowSameDayHandoff: e.target.checked })}
               />
             </label>
-            <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-500 ring-1 ring-slate-200">
-              订单按 rank_no 倒排产能，演示数据来自本地 mock，可替换为 Supabase 表。
-            </p>
+            <p className="rounded-xl bg-slate-50 p-3 text-xs text-slate-500 ring-1 ring-slate-200">接入 Supabase 订单/日历后将即时刷新排程预览。</p>
           </div>
         </div>
 
         <div className="rounded-2xl bg-white/80 p-5 shadow ring-1 ring-slate-200 lg:col-span-2">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-900">订单池排序</h3>
-            <p className="text-xs text-slate-500">拖动卡片调整 rank_no</p>
+            <p className="text-xs text-slate-500">拖动卡片调整 rank_no（暂无数据时保持空状态）</p>
           </div>
           <div className="mt-4 space-y-3">
+            {orders.length === 0 && <p className="text-sm text-slate-500">暂无订单数据，接通 Supabase 后可在此拖动排序。</p>}
             {orders
               .sort((a, b) => a.rank_no - b.rank_no)
               .map((order, idx) => (
@@ -205,37 +217,42 @@ export function BoardPage() {
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl bg-white/80 p-5 shadow ring-1 ring-slate-200">
           <h3 className="text-lg font-semibold text-slate-900">工序产能热力</h3>
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-slate-500">
-                  <th className="pb-2">工序</th>
-                  <th className="pb-2">日期</th>
-                  <th className="pb-2">已用 / 可用 (h)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {heat.map((cell) => {
-                  const ratio = cell.avail === 0 ? 0 : cell.used / cell.avail;
-                  const color = ratio > 0.9 ? 'text-red-600' : ratio > 0.6 ? 'text-amber-600' : 'text-emerald-600';
-                  return (
-                    <tr key={`${cell.process_id}-${cell.work_date}`} className="align-top">
-                      <td className="py-2 font-semibold text-slate-800">{cell.process_id}</td>
-                      <td className="py-2 text-slate-600">{cell.work_date}</td>
-                      <td className={`py-2 ${color}`}>
-                        {cell.used.toFixed(2)} / {cell.avail.toFixed(2)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          {heat.length === 0 ? (
+            <p className="mt-4 text-sm text-slate-500">等待产能数据接入后展示热力列表。</p>
+          ) : (
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-slate-500">
+                    <th className="pb-2">工序</th>
+                    <th className="pb-2">日期</th>
+                    <th className="pb-2">已用 / 可用 (h)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {heat.map((cell) => {
+                    const ratio = cell.avail === 0 ? 0 : cell.used / cell.avail;
+                    const color = ratio > 0.9 ? 'text-red-600' : ratio > 0.6 ? 'text-amber-600' : 'text-emerald-600';
+                    return (
+                      <tr key={`${cell.process_id}-${cell.work_date}`} className="align-top">
+                        <td className="py-2 font-semibold text-slate-800">{cell.process_id}</td>
+                        <td className="py-2 text-slate-600">{cell.work_date}</td>
+                        <td className={`py-2 ${color}`}>
+                          {cell.used.toFixed(2)} / {cell.avail.toFixed(2)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         <div className="rounded-2xl bg-white/80 p-5 shadow ring-1 ring-slate-200">
           <h3 className="text-lg font-semibold text-slate-900">预览结果</h3>
           <div className="mt-4 space-y-3 text-sm text-slate-700">
+            {preview.length === 0 && <p className="text-sm text-slate-500">暂无预览结果，请接入 Supabase 数据源后自动刷新。</p>}
             {preview.map((p) => (
               <div key={`${p.order_no}-${p.part_no}`} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
                 <div>

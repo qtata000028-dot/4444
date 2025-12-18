@@ -24,7 +24,8 @@ export function AppShell({ title, subtitle, children }: AppShellProps) {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200">
-      <aside className="hidden w-64 flex-shrink-0 flex-col border-r border-slate-200 bg-white/85 px-4 py-6 shadow-xl shadow-slate-200/60 lg:flex">
+      <div className="pointer-events-none fixed inset-0 opacity-50" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(59,130,246,0.08), transparent 30%), radial-gradient(circle at 80% 0%, rgba(94,234,212,0.07), transparent 28%), radial-gradient(circle at 60% 80%, rgba(59,130,246,0.06), transparent 30%)' }} />
+      <aside className="relative hidden w-64 flex-shrink-0 flex-col border-r border-slate-200/60 bg-white/90 px-4 py-6 shadow-xl shadow-slate-300/60 backdrop-blur lg:flex">
         <div className="mb-8 flex items-center gap-3 px-2 text-slate-800">
           <PanelLeft className="h-6 w-6 text-blue-500" />
           <div>

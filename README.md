@@ -6,7 +6,7 @@ React 18 + Vite + TypeScript + Tailwind 构建，前端直连 Supabase PostgREST
 - **自定义登录**：依据 `employee_user` 表校验明文/哈希密码，记住密码（本地 base64，仅演示），登录态写入 `localStorage`。
 - **头像闭环**：`/me` & 看板完成 avatars bucket 上传 → `employee_user.avatar_path` 更新，公有 bucket 直接展示。
 - **ERP 布局**：`AppShell` 提供左侧导航 + 顶部栏，页卡圆角 2xl、轻阴影，整体 slate 商务配色。
-- **排程看板**：基于本地 mock 的订单池拖动、参数切换、热力/可行性预览（可替换为 Supabase 数据）。
+- **排程看板**：订单池拖动、参数切换、热力/可行性预览（默认空数据，接入 Supabase 表后生效）。
 - **模块拆分**：`/orders`、`/steps`、`/impact`、`/tables` 等页面独立路由，可直接通过 URL 打开。
 
 ## 环境变量
@@ -32,7 +32,7 @@ npm run build # 产出 dist，用于 Vercel 静态部署
 - `src/lib/supabase.ts`：Supabase client，含内置演示 URL/anon key 回退
 - `src/lib/auth.ts`：登录、session、记住密码工具 & Profile 查询
 - `src/lib/scheduler.ts`：前端倒排算法（安全天数、同日衔接）
-- `src/lib/mockData.ts`：演示用订单/步骤/日历数据
+- `src/lib/mockData.ts`：空数组占位，等待 Supabase 数据接入
 - `src/components/AppShell.tsx`：高端 ERP 布局
 - `src/pages/*.tsx`：路由页面（Login/Me/Board/Orders/Steps/Impact/Tables）
 
