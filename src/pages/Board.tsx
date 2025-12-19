@@ -142,8 +142,8 @@ export function BoardPage() {
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_1.4fr]">
-        <div className="space-y-6">
+      <div className="grid gap-6 xl:grid-cols-12">
+        <div className="space-y-6 xl:col-span-4">
           <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-900">排程参数</h3>
@@ -178,7 +178,7 @@ export function BoardPage() {
           <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-900">功能区</h3>
-              <p className="text-xs text-slate-500">点击卡片切换上方页签</p>
+              <p className="text-xs text-slate-500">点击卡片跳转对应模块</p>
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {[
@@ -202,7 +202,7 @@ export function BoardPage() {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 xl:col-span-8">
           <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-900">订单池排序</h3>
