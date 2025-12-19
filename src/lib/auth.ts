@@ -9,6 +9,7 @@ export interface RememberPayload {
   enabled: boolean;
   login_name: string;
   password_encoded?: string;
+  avatar_path?: string;
 }
 
 export function encodePassword(pwd: string) {
@@ -57,12 +58,12 @@ export function clearSession() {
 
 export function getRemember(): RememberPayload {
   const raw = localStorage.getItem(REMEMBER_KEY);
-  if (!raw) return { enabled: false, login_name: '', password_encoded: '' };
+  if (!raw) return { enabled: false, login_name: '', password_encoded: '', avatar_path: '' };
   try {
     return JSON.parse(raw) as RememberPayload;
   } catch (err) {
     console.error(err);
-    return { enabled: false, login_name: '', password_encoded: '' };
+    return { enabled: false, login_name: '', password_encoded: '', avatar_path: '' };
   }
 }
 

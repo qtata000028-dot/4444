@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 import { OrderHeader, OrderItem, PlanAllocationDay, ProcessCalendarDay, SchedulePreviewResult, SessionPayload, StepTemplate } from '../types';
 import { runSchedule, ScheduleOptions } from '../lib/scheduler';
@@ -14,6 +15,7 @@ interface HeatCell {
 }
 
 export function BoardPage() {
+  const navigate = useNavigate();
   const [session, setSession] = useState<SessionPayload | null>(() => getSession());
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -140,71 +142,101 @@ export function BoardPage() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-900">排程参数</h3>
-            <div className="flex gap-2 text-xs text-slate-500">
-              <span className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">可行 {preview.filter((p) => p.feasible).length}</span>
-              <span className="rounded-full bg-amber-50 px-3 py-1 font-semibold text-amber-700">风险 {preview.length - preview.filter((p) => p.feasible).length}</span>
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_1.4fr]">
+        <div className="space-y-6">
+          <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-900">排程参数</h3>
+              <div className="flex gap-2 text-xs text-slate-500">
+                <span className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">可行 {preview.filter((p) => p.feasible).length}</span>
+                <span className="rounded-full bg-amber-50 px-3 py-1 font-semibold text-amber-700">风险 {preview.length - preview.filter((p) => p.feasible).length}</span>
+              </div>
+            </div>
+            <div className="mt-4 space-y-3 text-sm">
+              <label className="flex items-center gap-3">
+                <span className="w-28 text-slate-600">安全缓冲天数</span>
+                <input
+                  type="number"
+                  className="w-24 rounded-lg border border-slate-200 px-3 py-2"
+                  value={options.safetyDays}
+                  min={0}
+                  onChange={(e) => setOptions({ ...options, safetyDays: Number(e.target.value) })}
+                />
+              </label>
+              <label className="flex items-center gap-3">
+                <span className="w-28 text-slate-600">同日衔接</span>
+                <input
+                  type="checkbox"
+                  checked={options.allowSameDayHandoff}
+                  onChange={(e) => setOptions({ ...options, allowSameDayHandoff: e.target.checked })}
+                />
+              </label>
+              <p className="rounded-xl bg-slate-50/90 p-3 text-xs text-slate-500 ring-1 ring-slate-200">接入 Supabase 订单/日历后将即时刷新排程预览。</p>
             </div>
           </div>
-          <div className="mt-4 space-y-3 text-sm">
-            <label className="flex items-center gap-3">
-              <span className="w-28 text-slate-600">安全缓冲天数</span>
-              <input
-                type="number"
-                className="w-24 rounded-lg border border-slate-200 px-3 py-2"
-                value={options.safetyDays}
-                min={0}
-                onChange={(e) => setOptions({ ...options, safetyDays: Number(e.target.value) })}
-              />
-            </label>
-            <label className="flex items-center gap-3">
-              <span className="w-28 text-slate-600">同日衔接</span>
-              <input
-                type="checkbox"
-                checked={options.allowSameDayHandoff}
-                onChange={(e) => setOptions({ ...options, allowSameDayHandoff: e.target.checked })}
-              />
-            </label>
-            <p className="rounded-xl bg-slate-50/90 p-3 text-xs text-slate-500 ring-1 ring-slate-200">接入 Supabase 订单/日历后将即时刷新排程预览。</p>
+
+          <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-900">功能区</h3>
+              <p className="text-xs text-slate-500">点击卡片切换上方页签</p>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {[
+                { label: '订单管理', desc: '维护订单与零件明细', to: '/orders' },
+                { label: '工艺步骤', desc: '配置工序模板', to: '/steps' },
+                { label: '影响分析', desc: '对比排程结果', to: '/impact' },
+                { label: '数据字典', desc: '查看表结构字段', to: '/tables' },
+              ].map((item) => (
+                <button
+                  key={item.to}
+                  type="button"
+                  onClick={() => navigate(item.to)}
+                  className="group flex flex-col items-start gap-2 rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 px-4 py-4 text-left text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <span className="text-sm font-semibold text-slate-900">{item.label}</span>
+                  <span className="text-xs text-slate-500">{item.desc}</span>
+                  <span className="text-[11px] font-semibold text-blue-600">打开模块 →</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur lg:col-span-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-900">订单池排序</h3>
-            <p className="text-xs text-slate-500">拖动卡片调整 rank_no（暂无数据时保持空状态）</p>
-          </div>
-          <div className="mt-4 space-y-3">
-            {orders.length === 0 && <p className="text-sm text-slate-500">暂无订单数据，接通 Supabase 后可在此拖动排序。</p>}
-            {orders
-              .sort((a, b) => a.rank_no - b.rank_no)
-              .map((order, idx) => (
-                <div
-                  key={order.order_no}
-                  draggable
-                  onDragStart={(e) => e.dataTransfer.setData('text/plain', order.order_no)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    const dragged = e.dataTransfer.getData('text/plain');
-                    setOrders((prev) => {
-                      const next = prev.map((o) =>
-                        o.order_no === dragged ? { ...o, rank_no: idx + 1 } : o.rank_no >= idx + 1 ? { ...o, rank_no: o.rank_no + 1 } : o,
-                      );
-                      return next.sort((a1, b1) => a1.rank_no - b1.rank_no);
-                    });
-                  }}
-                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 px-4 py-3 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow"
-                >
-                  <div>
-                    <div className="text-base font-semibold text-slate-900">{order.order_no}</div>
-                    <div className="text-xs text-slate-500">结算日期：{order.settle_date}</div>
+        <div className="space-y-6">
+          <div className="rounded-2xl bg-white/90 p-5 shadow-xl shadow-slate-200/40 ring-1 ring-slate-200 backdrop-blur">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-900">订单池排序</h3>
+              <p className="text-xs text-slate-500">拖动卡片调整 rank_no（暂无数据时保持空状态）</p>
+            </div>
+            <div className="mt-4 space-y-3">
+              {orders.length === 0 && <p className="text-sm text-slate-500">暂无订单数据，接通 Supabase 后可在此拖动排序。</p>}
+              {orders
+                .sort((a, b) => a.rank_no - b.rank_no)
+                .map((order, idx) => (
+                  <div
+                    key={order.order_no}
+                    draggable
+                    onDragStart={(e) => e.dataTransfer.setData('text/plain', order.order_no)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      const dragged = e.dataTransfer.getData('text/plain');
+                      setOrders((prev) => {
+                        const next = prev.map((o) =>
+                          o.order_no === dragged ? { ...o, rank_no: idx + 1 } : o.rank_no >= idx + 1 ? { ...o, rank_no: o.rank_no + 1 } : o,
+                        );
+                        return next.sort((a1, b1) => a1.rank_no - b1.rank_no);
+                      });
+                    }}
+                    className="flex items-center justify-between rounded-xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 px-4 py-3 text-sm shadow-sm transition hover:-translate-y-0.5 hover:shadow"
+                  >
+                    <div>
+                      <div className="text-base font-semibold text-slate-900">{order.order_no}</div>
+                      <div className="text-xs text-slate-500">结算日期：{order.settle_date}</div>
+                    </div>
+                    <div className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">排序 {order.rank_no}</div>
                   </div>
-                  <div className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white">排序 {order.rank_no}</div>
-                </div>
-              ))}
+                ))}
+            </div>
           </div>
         </div>
       </div>
