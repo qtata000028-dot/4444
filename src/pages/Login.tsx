@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { login, getRemember, saveRemember, encodePassword, decodePassword } from '../lib/auth';
+import { getRemember, saveRemember, encodePassword, decodePassword } from '../lib/auth';
 import { getPublicFileUrl } from '../lib/supabase';
+import { backend } from '../api/tunnel';
 import { Sparkles, Shield, Lock, UserRound } from 'lucide-react';
 
 export function LoginPage() {
@@ -31,7 +32,12 @@ export function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      const session = await login(loginName, password);
+      const response = await backend.login(loginName, password);
+      if (!response?.ok) {
+        throw new Error(response?.message || '登录失败');
+      }
+      const session = response.user || {};
+      localStorage.setItem('login_user', JSON.stringify(session));
       if (remember) {
         saveRemember({
           enabled: true,

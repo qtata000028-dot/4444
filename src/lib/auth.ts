@@ -2,6 +2,7 @@ import { EmployeeProfile, EmployeeUser, SessionPayload } from '../types';
 import { supabase } from './supabase';
 
 const SESSION_KEY = 'erp_session';
+const LOGIN_USER_KEY = 'login_user';
 const REMEMBER_KEY = 'erp_remember';
 const LAST_LOGIN_KEY = 'erp_last_login_time';
 
@@ -27,6 +28,26 @@ export function decodePassword(encoded?: string) {
 }
 
 export function getSession(): SessionPayload | null {
+  const loginRaw = localStorage.getItem(LOGIN_USER_KEY);
+  if (loginRaw) {
+    try {
+      const user = JSON.parse(loginRaw) as Partial<SessionPayload> & { emp_id?: string };
+      if (user.emp_id || user.login_name) {
+        return {
+          emp_id: user.emp_id || '',
+          login_name: user.login_name || '',
+          emp_name: user.emp_name || user.login_name || '',
+          role: user.role || 'viewer',
+          department_id: user.department_id ?? null,
+          avatar_path: user.avatar_path,
+          login_time: user.login_time || new Date().toISOString(),
+        };
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   const raw = localStorage.getItem(SESSION_KEY);
   if (!raw) return null;
   try {
@@ -44,6 +65,7 @@ export function getCurrentUser() {
 
 export function saveSession(session: SessionPayload) {
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  localStorage.setItem(LOGIN_USER_KEY, JSON.stringify(session));
   localStorage.setItem(LAST_LOGIN_KEY, session.login_time);
 }
 
@@ -54,6 +76,7 @@ export function saveUser(session: SessionPayload) {
 
 export function clearSession() {
   localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(LOGIN_USER_KEY);
 }
 
 export function getRemember(): RememberPayload {
@@ -69,32 +92,6 @@ export function getRemember(): RememberPayload {
 
 export function saveRemember(payload: RememberPayload) {
   localStorage.setItem(REMEMBER_KEY, JSON.stringify(payload));
-}
-
-export async function login(login_name: string, password: string) {
-  const { data, error } = await supabase
-    .from('employee_user')
-    .select('*')
-    .eq('emp_name', login_name)
-    .eq('pwd', password)
-    .eq('is_active', true)
-    .limit(1)
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!data) throw new Error('登录名或密码错误，或账户已停用');
-
-  const session: SessionPayload = {
-    emp_id: data.emp_id,
-    login_name: data.login_name,
-    emp_name: data.emp_name,
-    role: data.role,
-    department_id: data.department_id,
-    avatar_path: data.avatar_path,
-    login_time: new Date().toISOString(),
-  };
-  saveSession(session);
-  return session;
 }
 
 export async function fetchProfile(emp_id: string): Promise<EmployeeProfile | null> {
