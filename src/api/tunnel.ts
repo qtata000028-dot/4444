@@ -18,18 +18,20 @@ async function getBaseUrl(): Promise<string> {
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
     }).then((r) => r.json());
   } catch (error) {
-    throw new Error('Cannot connect to config server');
+    throw new Error('配置错误: 无法连接到配置服务器 (Supabase)');
   }
 
   const base = String((rows as { public_url?: string }[])?.[0]?.public_url || '').replace(/\/+$/, '');
-  if (!base) throw new Error('Cannot connect to config server');
+  if (!base) throw new Error('配置错误: 无法连接到配置服务器 (Supabase)');
   cachedBase = base;
   return base;
 }
 
 async function request(path: string, method: string, body?: unknown) {
   const base = await getBaseUrl();
-  const res = await fetch(base + path, {
+  const safeBase = base.replace(/\/+$/, '');
+  const safePath = path.startsWith('/') ? path : `/${path}`;
+  const res = await fetch(`${safeBase}${safePath}`, {
     method,
     headers: {
       'Content-Type': 'application/json',
