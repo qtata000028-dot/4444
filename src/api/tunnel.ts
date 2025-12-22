@@ -12,12 +12,17 @@ async function getBaseUrl(): Promise<string> {
     `${SUPABASE_URL}/rest/v1/tunnel_endpoints` +
     `?select=public_url&name=eq.${encodeURIComponent(TUNNEL_NAME)}&limit=1`;
 
-  const rows = await fetch(url, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
-  }).then((r) => r.json());
+  let rows: unknown;
+  try {
+    rows = await fetch(url, {
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+    }).then((r) => r.json());
+  } catch (error) {
+    throw new Error('Cannot connect to config server');
+  }
 
-  const base = String(rows?.[0]?.public_url || '').replace(/\/+$/, '');
-  if (!base) throw new Error('Supabase 没取到 public_url');
+  const base = String((rows as { public_url?: string }[])?.[0]?.public_url || '').replace(/\/+$/, '');
+  if (!base) throw new Error('Cannot connect to config server');
   cachedBase = base;
   return base;
 }

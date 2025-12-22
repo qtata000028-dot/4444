@@ -53,7 +53,9 @@ export function LoginPage() {
       const redirect = (location.state as { from?: string } | null)?.from || '/me';
       navigate(redirect);
     } catch (err: unknown) {
-      setError((err as Error).message);
+      const message = (err as Error).message || '登录失败';
+      setError(message);
+      alert(message);
     } finally {
       setLoading(false);
     }
